@@ -1,4 +1,5 @@
-/* jshint esversion: 6 */
+/* jshint esversion: 6, node: true */
+"use strict";
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -10,12 +11,41 @@ router.get('/new', (req, res, next) => {
   res.render('celebrities/new');
 });
 
+router.get('/:id/edit', (req, res, next) => {
+  const celebId = req.params.id;
+  Celebrity.findById(celebId, (err, celeb) => {
+    if (err) return next(err);
+    res.render('celebrities/edit', {celeb});
+  });
+
+});
+
+router.post('/:id/delete', (req, res, next) => {
+  const celebId = req.params.id;
+  Celebrity.findByIdAndRemove(celebId, (err, doc) =>{
+    if (err) return next(err);
+    console.log('Deleted: ', doc);
+    res.redirect('/celebrities');
+  });
+});
+
 router.get('/:id', (req, res, next) => {
-  celebrityId = req.params.id;
+  const celebrityId = req.params.id;
   Celebrity.findById(celebrityId, (err, celebrity) =>{
     if (err) return next(err);
     res.render('celebrities/show', {celeb: celebrity});
   });
+});
+
+router.post('/:id', (req, res, next) => {
+  const celebId = req.params.id;
+  const {name, occupation, catchPhrase} = req.body;
+
+  Celebrity.findByIdAndUpdate(celebId, {name, occupation, catchPhrase}, (err, doc) => {
+    if (err) return next(err);
+    res.render(`celebrities/show`, {celeb: {celebId, name, occupation, catchPhrase} });
+  });
+
 });
 
 router.get('/', (req, res, next) => {
